@@ -1,361 +1,1087 @@
-index.html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Trợ Lý AI Nội Thất</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2E7D32">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; padding-bottom: 70px; }
-        .header { background: #2E7D32; color: white; padding: 15px; text-align: center; font-size: 18px; font-weight: bold; position: sticky; top: 0; z-index: 100; }
-        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
-        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .card-title { font-weight: bold; margin-bottom: 10px; color: #2E7D32; border-left: 4px solid #2E7D32; padding-left: 10px; }
-        input, textarea, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-        button { background: #2E7D32; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 16px; cursor: pointer; width: 100%; margin-top: 10px; }
-        button:active { background: #1B5E20; }
-        .result { background: #e8f5e9; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; }
-        .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #ddd; }
-        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; color: #666; }
-        .tab.active { color: #2E7D32; border-top: 2px solid #2E7D32; background: #f5f5f5; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .voice-btn { background: #FF5722; margin-top: 5px; }
-        .voice-btn:active { background: #E64A19; }
-        .setting-row { margin-bottom: 15px; }
-        .setting-row label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 13px; color: #666; }
-        .test-status { margin-top: 10px; padding: 8px; border-radius: 8px; font-size: 13px; }
-        .test-success { background: #d4edda; color: #155724; }
-        .test-error { background: #f8d7da; color: #721c24; }
-        .history-item { border-bottom: 1px solid #eee; padding: 10px 0; }
-        .history-date { font-size: 11px; color: #999; }
-        .history-type { font-weight: bold; font-size: 12px; margin-bottom: 5px; }
-        .history-type.thu { color: #2E7D32; }
-        .history-type.chi { color: #D32F2F; }
-        .history-content { font-size: 14px; }
-        .clear-history { background: #dc3545; margin-top: 10px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1a237e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trợ Lý Nội Thất">
+<link rel="manifest" href="manifest.json">
+<title>🏠 Trợ Lý AI – Quản Lý Thu Chi</title>
+<style>
+  :root {
+    --primary: #1a237e; --primary-light: #3949ab;
+    --green: #1b5e20;   --green-light: #2e7d32; --green-bg: #e8f5e9;
+    --red: #b71c1c;     --red-light: #c62828;   --red-bg: #ffebee;
+    --orange: #e65100;  --orange-bg: #fff3e0;
+    --blue-bg: #e3f2fd; --text: #212121; --muted: #757575;
+    --card: #fff; --bg: #f5f5f5; --border: #e0e0e0;
+    --radius: 16px; --shadow: 0 2px 12px rgba(0,0,0,.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg);
+         color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+  /* ── HEADER ── */
+  .header { background: var(--primary); color: #fff; padding: 14px 18px 10px;
+             display: flex; align-items: center; gap: 12px;
+             box-shadow: 0 2px 8px rgba(0,0,0,.25); position: sticky; top: 0; z-index: 100; }
+  .header-icon { font-size: 26px; }
+  .header-title { font-size: 16px; font-weight: 700; line-height: 1.2; }
+  .header-sub { font-size: 11px; opacity: .75; }
+  .header-status { margin-left: auto; display: flex; align-items: center; gap: 6px;
+                   font-size: 11px; background: rgba(255,255,255,.15);
+                   padding: 4px 10px; border-radius: 20px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #69f0ae; }
+  .dot.red { background: #ff5252; }
+
+  /* ── TABS ── */
+  .tabs { display: flex; background: var(--card); border-bottom: 2px solid var(--border); }
+  .tab { flex: 1; padding: 12px 6px; text-align: center; font-size: 13px; font-weight: 600;
+          cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent;
+          transition: .2s; user-select: none; }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .tab-content { display: none; padding: 14px; }
+  .tab-content.active { display: block; }
+
+  /* ── CARD ── */
+  .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+           padding: 16px; margin-bottom: 14px; }
+  .card-title { font-size: 13px; font-weight: 700; color: var(--primary);
+                margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+  /* ── VOICE BUTTON ── */
+  .voice-area { text-align: center; padding: 10px 0 6px; }
+  .voice-btn { width: 80px; height: 80px; border-radius: 50%; border: none;
+               background: var(--primary); color: #fff; font-size: 32px;
+               cursor: pointer; box-shadow: 0 4px 18px rgba(26,35,126,.4);
+               transition: .2s; display: inline-flex; align-items: center; justify-content: center; }
+  .voice-btn:active { transform: scale(.93); }
+  .voice-btn.listening { background: var(--red); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(183,28,28,.5)}
+                     50%{box-shadow:0 0 0 16px rgba(183,28,28,0)} }
+  .voice-label { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  /* ── TRANSCRIPT ── */
+  .transcript-box { background: var(--blue-bg); border-radius: 10px; padding: 10px 12px;
+                    font-size: 13px; min-height: 44px; color: var(--text);
+                    border: 1.5px dashed #90caf9; margin: 10px 0; line-height: 1.5; }
+  .transcript-box.empty { color: var(--muted); font-style: italic; }
+
+  /* ── INPUT ── */
+  .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .input-row textarea { flex: 1; border: 1.5px solid var(--border); border-radius: 10px;
+                         padding: 10px 12px; font-size: 13px; resize: none; outline: none;
+                         font-family: inherit; line-height: 1.5; }
+  .input-row textarea:focus { border-color: var(--primary); }
+  .btn { border: none; border-radius: 10px; padding: 10px 16px; font-size: 13px;
+          font-weight: 600; cursor: pointer; transition: .15s; display: inline-flex;
+          align-items: center; gap: 6px; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:active { opacity: .85; }
+  .btn-green { background: var(--green-light); color: #fff; }
+  .btn-red   { background: var(--red-light);   color: #fff; }
+  .btn-gray  { background: #e0e0e0; color: var(--text); }
+  .btn-sm { padding: 7px 12px; font-size: 12px; border-radius: 8px; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  /* ── AI RESULT ── */
+  .result-box { border-radius: 12px; padding: 14px; margin: 10px 0; }
+  .result-box.thu { background: var(--green-bg); border: 1.5px solid #a5d6a7; }
+  .result-box.chi { background: var(--red-bg);   border: 1.5px solid #ef9a9a; }
+  .result-box.error { background: var(--orange-bg); border: 1.5px solid #ffcc80; }
+  .result-type { font-size: 12px; font-weight: 700; text-transform: uppercase;
+                  letter-spacing: .5px; margin-bottom: 8px; }
+  .result-type.thu { color: var(--green); }
+  .result-type.chi { color: var(--red); }
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .field-item { background: rgba(255,255,255,.7); border-radius: 8px; padding: 7px 10px; }
+  .field-label { font-size: 10px; color: var(--muted); font-weight: 600; margin-bottom: 2px; }
+  .field-value { font-size: 13px; font-weight: 600; color: var(--text); }
+  .field-value.money { color: var(--green); }
+  .field-value.money.neg { color: var(--red); }
+  .field-item.full { grid-column: 1/-1; }
+
+  /* ── ACTION BUTTONS ── */
+  .action-row { display: flex; gap: 8px; margin-top: 12px; }
+  .action-row .btn { flex: 1; justify-content: center; }
+
+  /* ── HISTORY ── */
+  .history-item { border-radius: 10px; padding: 10px 12px; margin-bottom: 8px;
+                   display: flex; align-items: flex-start; gap: 10px; }
+  .history-item.thu { background: var(--green-bg); border-left: 4px solid var(--green-light); }
+  .history-item.chi { background: var(--red-bg);   border-left: 4px solid var(--red-light); }
+  .history-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .history-body { flex: 1; }
+  .history-main { font-size: 13px; font-weight: 600; }
+  .history-sub  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .history-amount { font-size: 14px; font-weight: 700; flex-shrink: 0; }
+  .history-amount.thu { color: var(--green); }
+  .history-amount.chi { color: var(--red);   }
+
+  /* ── SETTINGS ── */
+  .setting-group { margin-bottom: 14px; }
+  .setting-label { font-size: 12px; font-weight: 700; color: var(--primary);
+                    margin-bottom: 6px; display: block; }
+  .setting-input { width: 100%; border: 1.5px solid var(--border); border-radius: 8px;
+                    padding: 9px 12px; font-size: 13px; outline: none; font-family: inherit; }
+  .setting-input:focus { border-color: var(--primary); }
+  .setting-hint { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px;
+            border-radius: 20px; text-transform: uppercase; }
+  .badge.ok  { background: var(--green-bg); color: var(--green); }
+  .badge.err { background: var(--red-bg);   color: var(--red);   }
+
+  /* ── SUMMARY CARDS ── */
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .summary-card { border-radius: 12px; padding: 14px; text-align: center; }
+  .summary-card.thu { background: var(--green-bg); }
+  .summary-card.chi { background: var(--red-bg);   }
+  .summary-card.profit { background: var(--blue-bg); grid-column: 1/-1; }
+  .summary-label { font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+  .summary-value { font-size: 18px; font-weight: 800; }
+  .summary-value.thu { color: var(--green); }
+  .summary-value.chi { color: var(--red);   }
+  .summary-value.profit { color: var(--primary); }
+
+  /* ── TOAST ── */
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+            background: #333; color: #fff; padding: 10px 22px; border-radius: 24px;
+            font-size: 13px; z-index: 9999; transition: .3s; white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.success { background: var(--green-light); }
+  #toast.error   { background: var(--red-light); }
+
+  /* ── LOADING ── */
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.3);
+              border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── MODAL ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5);
+                    z-index: 500; align-items: center; justify-content: center; padding: 16px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 20px; padding: 20px; width: 100%;
+            max-width: 420px; max-height: 85vh; overflow-y: auto; }
+  .modal-title { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 14px; }
+
+  /* ── RESPONSIVE ── */
+  @media(min-width:480px){ .field-grid{grid-template-columns:1fr 1fr 1fr;} }
+</style>
 </head>
 <body>
-    <div class="header">🏠 Trợ Lý AI Nội Thất</div>
-    
-    <div class="container">
-        <div class="tab-bar">
-            <div class="tab active" data-tab="voice">🎤 Nhập</div>
-            <div class="tab" data-tab="history">📋 Lịch sử</div>
-            <div class="tab" data-tab="settings">⚙️ Cài đặt</div>
-        </div>
 
-        <!-- Tab Voice -->
-        <div id="voice" class="tab-content active">
-            <div class="card">
-                <div class="card-title">🎤 Nhập bằng giọng nói</div>
-                <button id="voiceInputBtn" class="voice-btn">🎙️ Nhấn để nói</button>
-                <textarea id="voiceText" rows="3" placeholder="Hoặc nhập văn bản..."></textarea>
-                <button id="submitBtn">📤 Xử lý & Lưu</button>
-                <div id="result" class="result"></div>
-            </div>
-            <div class="card">
-                <div class="card-title">📝 Ví dụ câu nói</div>
-                <p style="font-size: 13px; color: #666;">• Thu khách Nguyễn Văn An mua sofa góc 12 triệu, đặt cọc 5 triệu</p>
-                <p style="font-size: 13px; color: #666;">• Nhập hàng sofa da từ Công ty A giá 8 triệu rưỡi, vận chuyển 250 nghìn</p>
-                <p style="font-size: 13px; color: #666;">• Tháng này thu bao nhiêu?</p>
-            </div>
-        </div>
+<!-- HEADER -->
+<div class="header">
+  <div class="header-icon">🏠</div>
+  <div>
+    <div class="header-title">Trợ Lý AI Nội Thất</div>
+    <div class="header-sub">Quản lý Thu – Chi bằng giọng nói</div>
+  </div>
+  <div class="header-status" id="connectionStatus">
+    <div class="dot red" id="statusDot"></div>
+    <span id="statusText">Chưa kết nối</span>
+  </div>
+</div>
 
-        <!-- Tab History -->
-        <div id="history" class="tab-content">
-            <div class="card">
-                <div class="card-title">📋 Lịch sử giao dịch</div>
-                <div id="historyList"></div>
-                <button id="clearHistoryBtn" class="clear-history">🗑️ Xóa lịch sử</button>
-            </div>
-        </div>
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('nhap')">🎙️ Nhập liệu</div>
+  <div class="tab" onclick="switchTab('lichsu')">📋 Lịch sử</div>
+  <div class="tab" onclick="switchTab('baocao')">📊 Báo cáo</div>
+  <div class="tab" onclick="switchTab('caidat')">⚙️ Cài đặt</div>
+</div>
 
-        <!-- Tab Settings -->
-        <div id="settings" class="tab-content">
-            <div class="card">
-                <div class="card-title">⚙️ Cài đặt</div>
-                <div class="setting-row">
-                    <label>🤖 Gemini API Key</label>
-                    <input type="password" id="geminiKey" placeholder="AIzaSy...">
-                </div>
-                <div class="setting-row">
-                    <label>📡 Apps Script URL</label>
-                    <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
-                </div>
-                <div class="setting-row">
-                    <label>📊 Spreadsheet ID</label>
-                    <input type="text" id="spreadsheetId" placeholder="1Xh_B2YKXPv...">
-                </div>
-                <div class="setting-row">
-                    <label>🤖 Bot Token (Telegram)</label>
-                    <input type="password" id="botToken" placeholder="123456789:ABC...">
-                </div>
-                <div class="setting-row">
-                    <label>💬 Chat ID (Telegram)</label>
-                    <input type="text" id="chatId" placeholder="123456789">
-                </div>
-                <button id="testConnectionBtn">🧪 Kiểm tra kết nối</button>
-                <div id="testResult" class="test-status"></div>
-                <button id="saveSettingsBtn" style="background: #2196F3; margin-top: 10px;">💾 Lưu cài đặt</button>
-            </div>
-        </div>
+<!-- ═══════════════════════════════════════════════ -->
+<!-- TAB 1: NHẬP LIỆU -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="tab-content active" id="tab-nhap">
+
+  <!-- Voice Input -->
+  <div class="card">
+    <div class="card-title">🎙️ Nhập bằng giọng nói hoặc văn bản</div>
+    <div class="voice-area">
+      <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤</button>
+      <div class="voice-label" id="voiceLabel">Nhấn để nói</div>
     </div>
 
-    <script>
-        // Load settings from localStorage
-        function loadSettings() {
-            document.getElementById('geminiKey').value = localStorage.getItem('geminiKey') || '';
-            document.getElementById('scriptUrl').value = localStorage.getItem('scriptUrl') || '';
-            document.getElementById('spreadsheetId').value = localStorage.getItem('spreadsheetId') || '';
-            document.getElementById('botToken').value = localStorage.getItem('botToken') || '';
-            document.getElementById('chatId').value = localStorage.getItem('chatId') || '';
-        }
+    <!-- Transcript -->
+    <div class="transcript-box empty" id="transcript">
+      Ví dụ: "Thu khách Nguyễn Văn An mua sofa góc 12 triệu, đặt cọc 5 triệu"<br>
+      hoặc: "Chi mua hàng Công ty A sản phẩm B 7 triệu, vận chuyển 250 nghìn"
+    </div>
 
-        function saveSettings() {
-            localStorage.setItem('geminiKey', document.getElementById('geminiKey').value);
-            localStorage.setItem('scriptUrl', document.getElementById('scriptUrl').value);
-            localStorage.setItem('spreadsheetId', document.getElementById('spreadsheetId').value);
-            localStorage.setItem('botToken', document.getElementById('botToken').value);
-            localStorage.setItem('chatId', document.getElementById('chatId').value);
-            alert('Đã lưu cài đặt!');
-        }
+    <!-- Text Input -->
+    <div class="input-row">
+      <textarea id="textInput" rows="2" placeholder="Hoặc gõ nội dung tại đây..."></textarea>
+      <button class="btn btn-primary" onclick="processInput()" id="processBtn">
+        <span id="processBtnContent">🤖 Xử lý</span>
+      </button>
+    </div>
+  </div>
 
-        // Test connection
-        async function testConnection() {
-            const scriptUrl = document.getElementById('scriptUrl').value;
-            const resultDiv = document.getElementById('testResult');
-            if (!scriptUrl) {
-                resultDiv.innerHTML = '❌ Vui lòng nhập Apps Script URL';
-                resultDiv.className = 'test-status test-error';
-                return;
-            }
-            resultDiv.innerHTML = '🔄 Đang kiểm tra...';
-            resultDiv.className = 'test-status';
-            try {
-                const response = await fetch(`${scriptUrl}?action=ping`);
-                const data = await response.json();
-                if (data.status === 'ok') {
-                    resultDiv.innerHTML = '✅ Kết nối thành công!';
-                    resultDiv.className = 'test-status test-success';
-                } else {
-                    resultDiv.innerHTML = '❌ Kết nối thất bại: ' + (data.message || 'Lỗi');
-                    resultDiv.className = 'test-status test-error';
-                }
-            } catch (error) {
-                resultDiv.innerHTML = '❌ Lỗi: ' + error.message;
-                resultDiv.className = 'test-status test-error';
-            }
-        }
+  <!-- AI Result -->
+  <div id="resultArea"></div>
 
-        // Save history to localStorage
-        function saveHistory(entry) {
-            let history = JSON.parse(localStorage.getItem('history') || '[]');
-            history.unshift({ ...entry, timestamp: new Date().toISOString() });
-            if (history.length > 50) history = history.slice(0, 50);
-            localStorage.setItem('history', JSON.stringify(history));
-            renderHistory();
-        }
+  <!-- Quick Actions -->
+  <div class="card">
+    <div class="card-title">⚡ Mẫu câu nhanh</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      <button class="btn btn-sm btn-gray" onclick="setQuick('thu-coc')">💰 Thu đặt cọc</button>
+      <button class="btn btn-sm btn-gray" onclick="setQuick('thu-full')">✅ Thu đủ tiền</button>
+      <button class="btn btn-sm btn-gray" onclick="setQuick('chi-hang')">📦 Chi mua hàng</button>
+      <button class="btn btn-sm btn-gray" onclick="setQuick('chi-vc')">🚚 Chi vận chuyển</button>
+      <button class="btn btn-sm btn-gray" onclick="setQuick('bao-cao')">📊 Hỏi báo cáo</button>
+    </div>
+  </div>
 
-        function renderHistory() {
-            const history = JSON.parse(localStorage.getItem('history') || '[]');
-            const container = document.getElementById('historyList');
-            if (history.length === 0) {
-                container.innerHTML = '<p style="color:#999; text-align:center;">Chưa có lịch sử</p>';
-                return;
-            }
-            container.innerHTML = history.map(item => `
-                <div class="history-item">
-                    <div class="history-date">${new Date(item.timestamp).toLocaleString()}</div>
-                    <div class="history-type ${item.type}">${item.type === 'thu' ? '💰 THU' : '📋 CHI'}</div>
-                    <div class="history-content">${item.content.substring(0, 100)}${item.content.length > 100 ? '...' : ''}</div>
-                </div>
-            `).join('');
-        }
+</div>
 
-        function clearHistory() {
-            if (confirm('Xóa toàn bộ lịch sử?')) {
-                localStorage.removeItem('history');
-                renderHistory();
-            }
-        }
+<!-- ═══════════════════════════════════════════════ -->
+<!-- TAB 2: LỊCH SỬ -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-lichsu">
+  <div class="card">
+    <div class="card-title" style="justify-content:space-between">
+      📋 Giao dịch gần đây
+      <button class="btn btn-sm btn-gray" onclick="clearHistory()">🗑️ Xóa</button>
+    </div>
+    <div id="historyList">
+      <div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">
+        Chưa có giao dịch nào.<br>Hãy nhập liệu ở tab 🎙️ Nhập liệu
+      </div>
+    </div>
+  </div>
+</div>
 
-        // Voice input
-        function setupVoice() {
-            const btn = document.getElementById('voiceInputBtn');
-            const textarea = document.getElementById('voiceText');
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                btn.disabled = true;
-                btn.textContent = '⚠️ Trình duyệt không hỗ trợ nhập giọng nói';
-                return;
-            }
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'vi-VN';
-            recognition.interimResults = false;
-            btn.onclick = () => {
-                recognition.start();
-                btn.textContent = '🎙️ Đang nghe...';
-                btn.disabled = true;
-            };
-            recognition.onresult = (event) => {
-                const text = event.results[0][0].transcript;
-                textarea.value = text;
-                btn.textContent = '🎙️ Nhấn để nói';
-                btn.disabled = false;
-            };
-            recognition.onerror = () => {
-                btn.textContent = '🎙️ Nhấn để nói';
-                btn.disabled = false;
-            };
-            recognition.onend = () => {
-                btn.textContent = '🎙️ Nhấn để nói';
-                btn.disabled = false;
-            };
-        }
+<!-- ═══════════════════════════════════════════════ -->
+<!-- TAB 3: BÁO CÁO -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-baocao">
+  <div class="summary-grid">
+    <div class="summary-card thu">
+      <div class="summary-label">💰 Tổng Thu (local)</div>
+      <div class="summary-value thu" id="totalThu">0 ₫</div>
+    </div>
+    <div class="summary-card chi">
+      <div class="summary-label">📋 Tổng Chi (local)</div>
+      <div class="summary-value chi" id="totalChi">0 ₫</div>
+    </div>
+    <div class="summary-card profit">
+      <div class="summary-label">📈 Lợi nhuận ước tính</div>
+      <div class="summary-value profit" id="totalProfit">0 ₫</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">ℹ️ Xem báo cáo chi tiết</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px;">
+      Báo cáo đầy đủ xem tại Google Sheets sheet <b>📊 Báo Cáo</b> – tự động cập nhật theo dữ liệu bạn nhập.
+    </p>
+    <button class="btn btn-primary" onclick="openSheets()" style="width:100%;justify-content:center">
+      📊 Mở Google Sheets
+    </button>
+  </div>
+  <div class="card">
+    <div class="card-title">🔄 Hỏi AI báo cáo nhanh</div>
+    <div class="input-row">
+      <textarea id="reportQuery" rows="2" placeholder='Ví dụ: "Hôm nay thu bao nhiêu?" hoặc "Tháng này lợi nhuận là bao nhiêu?"'></textarea>
+      <button class="btn btn-primary" onclick="askReport()">🤖</button>
+    </div>
+    <div id="reportAnswer"></div>
+  </div>
+</div>
 
-        // Submit and call Gemini + Apps Script
-        async function submit() {
-            const text = document.getElementById('voiceText').value.trim();
-            const geminiKey = document.getElementById('geminiKey').value;
-            const scriptUrl = document.getElementById('scriptUrl').value;
-            const spreadsheetId = document.getElementById('spreadsheetId').value;
-            const botToken = document.getElementById('botToken').value;
-            const chatId = document.getElementById('chatId').value;
-            const resultDiv = document.getElementById('result');
+<!-- ═══════════════════════════════════════════════ -->
+<!-- TAB 4: CÀI ĐẶT -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-caidat">
+  <div class="card">
+    <div class="card-title">🔑 Gemini API Key</div>
+    <div class="setting-group">
+      <label class="setting-label">API Key <span id="geminiStatus" class="badge err">Chưa cấu hình</span></label>
+      <input class="setting-input" type="password" id="geminiKey"
+             placeholder="AIzaSy..." oninput="saveSettings()">
+      <div class="setting-hint">
+        Lấy miễn phí tại <b>aistudio.google.com</b> → Get API Key<br>
+        Dùng tài khoản Gemini Pro của bạn (miễn phí đến 9/2026)
+      </div>
+    </div>
+  </div>
 
-            if (!text) {
-                resultDiv.innerHTML = '⚠️ Vui lòng nhập nội dung';
-                return;
-            }
-            if (!geminiKey) {
-                resultDiv.innerHTML = '⚠️ Vui lòng nhập Gemini API Key';
-                return;
-            }
-            if (!scriptUrl) {
-                resultDiv.innerHTML = '⚠️ Vui lòng nhập Apps Script URL';
-                return;
-            }
+  <div class="card">
+    <div class="card-title">📊 Google Sheets</div>
+    <div class="setting-group">
+      <label class="setting-label">Apps Script Web App URL <span id="sheetStatus" class="badge err">Chưa cấu hình</span></label>
+      <input class="setting-input" type="url" id="appsScriptUrl"
+             placeholder="https://script.google.com/macros/s/..." oninput="saveSettings()">
+      <div class="setting-hint">
+        Xem hướng dẫn tạo Apps Script trong file <b>Code.gs</b> kèm theo.<br>
+        Deploy → Web App → Anyone → Copy URL dán vào đây.
+      </div>
+    </div>
+    <div class="setting-group">
+      <label class="setting-label">Spreadsheet ID</label>
+      <input class="setting-input" type="text" id="spreadsheetId"
+             placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" oninput="saveSettings()">
+      <div class="setting-hint">Lấy từ URL Google Sheets: .../d/<b>[ID này]</b>/edit</div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="testSheets()" style="margin-top:6px">
+      🧪 Kiểm tra kết nối Sheets
+    </button>
+  </div>
 
-            resultDiv.innerHTML = '🔄 Đang xử lý với AI...';
+  <div class="card">
+    <div class="card-title">📱 Telegram Bot</div>
+    <div class="setting-group">
+      <label class="setting-label">Bot Token <span id="telegramStatus" class="badge err">Chưa cấu hình</span></label>
+      <input class="setting-input" type="password" id="telegramToken"
+             placeholder="123456789:AAF..." oninput="saveSettings()">
+      <div class="setting-hint">Tạo bot tại <b>@BotFather</b> trên Telegram → /newbot</div>
+    </div>
+    <div class="setting-group">
+      <label class="setting-label">Chat ID</label>
+      <input class="setting-input" type="text" id="telegramChatId"
+             placeholder="-1001234567890" oninput="saveSettings()">
+      <div class="setting-hint">
+        Gửi tin nhắn cho bot → mở<br>
+        <code style="font-size:10px">api.telegram.org/bot[TOKEN]/getUpdates</code><br>
+        Lấy chat.id trong kết quả
+      </div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="testTelegram()" style="margin-top:6px">
+      🧪 Gửi tin nhắn test
+    </button>
+  </div>
 
-            try {
-                // Call Gemini API to parse
-                const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{
-                                text: `Bạn là trợ lý quản lý nội thất. Phân tích câu sau và trả về JSON.
-                                Nếu là THU (bán hàng): {"type":"thu","tenKhach":"","diaChi":"","soDienThoai":"","tenHang":"","soTien":0,"daDatCoc":0}
-                                Nếu là CHI (mua hàng): {"type":"chi","tenHangMua":"","nhaCungCap":"","chiTienHang":0,"chiVanChuyen":0,"nguoiVanChuyen":"","chiLapDat":0,"nguoiLapDat":"","chiKhac":0}
-                                Câu: "${text}"
-                                Chỉ trả về JSON, không giải thích.`
-                            }]
-                        }]
-                    })
-                });
-                const geminiData = await geminiResponse.json();
-                let parsed = JSON.parse(geminiData.candidates[0].content.parts[0].text);
-                
-                // Add date
-                const today = new Date().toLocaleDateString('vi-VN');
-                
-                // Call Apps Script to save
-                let appsScriptResponse;
-                if (parsed.type === 'thu') {
-                    appsScriptResponse = await fetch(scriptUrl, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'writeThu',
-                            data: {
-                                tenKhach: parsed.tenKhach,
-                                diaChi: parsed.diaChi,
-                                soDienThoai: parsed.soDienThoai,
-                                tenHang: parsed.tenHang,
-                                ngayThu: today,
-                                soTien: parsed.soTien,
-                                daDatCoc: parsed.daDatCoc,
-                                daTraTiep: 0,
-                                ghiChu: text
-                            }
-                        })
-                    });
-                } else {
-                    appsScriptResponse = await fetch(scriptUrl, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'writeChi',
-                            data: {
-                                tenHangMua: parsed.tenHangMua,
-                                nhaCungCap: parsed.nhaCungCap,
-                                ngayNhap: today,
-                                chiTienHang: parsed.chiTienHang,
-                                chiVanChuyen: parsed.chiVanChuyen,
-                                nguoiVanChuyen: parsed.nguoiVanChuyen,
-                                chiLapDat: parsed.chiLapDat,
-                                nguoiLapDat: parsed.nguoiLapDat,
-                                chiKhac: parsed.chiKhac,
-                                thanhToanNCC: 'Chưa thanh toán',
-                                ghiChu: text
-                            }
-                        })
-                    });
-                }
-                
-                const saveResult = await appsScriptResponse.json();
-                
-                if (saveResult.status === 'ok') {
-                    resultDiv.innerHTML = `✅ Thành công! ${saveResult.message}`;
-                    saveHistory({ type: parsed.type, content: text });
-                    document.getElementById('voiceText').value = '';
-                    
-                    // Send Telegram notification if configured
-                    if (botToken && chatId) {
-                        fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                chat_id: chatId,
-                                text: `📋 ${parsed.type === 'thu' ? 'THU TIỀN' : 'CHI TIỀN'}\n${text}\n✅ Đã lưu thành công!`
-                            })
-                        }).catch(e => console.log('Telegram error:', e));
-                    }
-                } else {
-                    resultDiv.innerHTML = `❌ Lỗi: ${saveResult.message}`;
-                }
-            } catch (error) {
-                resultDiv.innerHTML = `❌ Lỗi: ${error.message}`;
-            }
-        }
+  <div class="card">
+    <div class="card-title">⚙️ Tùy chọn</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <input type="checkbox" id="voiceOutputEnabled" onchange="saveSettings()" style="width:18px;height:18px">
+      <label for="voiceOutputEnabled" style="font-size:13px">🔊 Phản hồi bằng giọng nói sau khi lưu</label>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <input type="checkbox" id="autoConfirm" onchange="saveSettings()" style="width:18px;height:18px">
+      <label for="autoConfirm" style="font-size:13px">⚡ Tự động lưu (không cần xác nhận)</label>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <input type="checkbox" id="telegramEnabled" checked onchange="saveSettings()" style="width:18px;height:18px">
+      <label for="telegramEnabled" style="font-size:13px">📱 Gửi thông báo Telegram sau khi lưu</label>
+    </div>
+  </div>
 
-        // Tab switching
-        function setupTabs() {
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    tab.classList.add('active');
-                    document.getElementById(tab.dataset.tab).classList.add('active');
-                    if (tab.dataset.tab === 'history') renderHistory();
-                });
-            });
-        }
+  <div class="card" style="background:var(--blue-bg)">
+    <div class="card-title">📖 Hướng dẫn nói chuyện với AI</div>
+    <div style="font-size:12px;line-height:1.8;color:var(--text)">
+      <b>💰 Thu tiền:</b><br>
+      "Thu khách [tên] mua [hàng] [số tiền], đặt cọc [số tiền]"<br>
+      "Khách Nguyễn An trả tiếp 3 triệu đơn sofa"<br><br>
+      <b>📋 Chi tiền:</b><br>
+      "Nhập hàng [tên hàng] từ [NCC], giá [số tiền], vận chuyển [tên người] [số tiền]"<br>
+      "Chi mua sản phẩm A của Công ty B 7 triệu"<br><br>
+      <b>📊 Báo cáo:</b><br>
+      "Hôm nay thu bao nhiêu?" / "Tháng này lợi nhuận?"
+    </div>
+  </div>
 
-        // Initialize
-        loadSettings();
-        setupTabs();
-        setupVoice();
-        renderHistory();
-        document.getElementById('submitBtn').onclick = submit;
-        document.getElementById('testConnectionBtn').onclick = testConnection;
-        document.getElementById('saveSettingsBtn').onclick = saveSettings;
-        document.getElementById('clearHistoryBtn').onclick = clearHistory;
-    </script>
+  <div style="text-align:center;padding:10px;font-size:11px;color:var(--muted)">
+    v1.0 • Trợ Lý AI Nội Thất • Chi phí: 0₫/tháng
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- MODAL XÁC NHẬN -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div class="modal-title">✅ Xác nhận lưu dữ liệu</div>
+    <div id="modalContent"></div>
+    <div class="action-row" style="margin-top:16px">
+      <button class="btn btn-gray" onclick="closeModal()">❌ Hủy</button>
+      <button class="btn btn-green" onclick="confirmSave()" id="confirmBtn">
+        ✅ Xác nhận lưu
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIG & STATE
+// ═══════════════════════════════════════════════════════════
+let CFG = {
+  geminiKey: '', appsScriptUrl: '', spreadsheetId: '',
+  telegramToken: '', telegramChatId: '',
+  voiceOutputEnabled: false, autoConfirm: false, telegramEnabled: true
+};
+let pendingData = null;
+let history = [];
+let recognition = null;
+let isListening = false;
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+window.onload = () => {
+  loadSettings();
+  loadHistory();
+  updateSummary();
+  checkVoiceSupport();
+  updateConnectionStatus();
+};
+
+function checkVoiceSupport() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    document.getElementById('voiceBtn').disabled = true;
+    document.getElementById('voiceLabel').textContent = 'Trình duyệt không hỗ trợ voice (dùng Chrome Android)';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════════
+function loadSettings() {
+  const saved = localStorage.getItem('ai_noi_that_cfg');
+  if (saved) CFG = { ...CFG, ...JSON.parse(saved) };
+  document.getElementById('geminiKey').value       = CFG.geminiKey || '';
+  document.getElementById('appsScriptUrl').value   = CFG.appsScriptUrl || '';
+  document.getElementById('spreadsheetId').value   = CFG.spreadsheetId || '';
+  document.getElementById('telegramToken').value   = CFG.telegramToken || '';
+  document.getElementById('telegramChatId').value  = CFG.telegramChatId || '';
+  document.getElementById('voiceOutputEnabled').checked = CFG.voiceOutputEnabled;
+  document.getElementById('autoConfirm').checked   = CFG.autoConfirm;
+  document.getElementById('telegramEnabled').checked = CFG.telegramEnabled;
+  updateBadges();
+}
+
+function saveSettings() {
+  CFG.geminiKey       = document.getElementById('geminiKey').value.trim();
+  CFG.appsScriptUrl   = document.getElementById('appsScriptUrl').value.trim();
+  CFG.spreadsheetId   = document.getElementById('spreadsheetId').value.trim();
+  CFG.telegramToken   = document.getElementById('telegramToken').value.trim();
+  CFG.telegramChatId  = document.getElementById('telegramChatId').value.trim();
+  CFG.voiceOutputEnabled = document.getElementById('voiceOutputEnabled').checked;
+  CFG.autoConfirm        = document.getElementById('autoConfirm').checked;
+  CFG.telegramEnabled    = document.getElementById('telegramEnabled').checked;
+  localStorage.setItem('ai_noi_that_cfg', JSON.stringify(CFG));
+  updateBadges();
+  updateConnectionStatus();
+}
+
+function updateBadges() {
+  setBadge('geminiStatus',   CFG.geminiKey       ? 'ok' : 'err', CFG.geminiKey       ? '✓ OK' : 'Chưa cấu hình');
+  setBadge('sheetStatus',    CFG.appsScriptUrl   ? 'ok' : 'err', CFG.appsScriptUrl   ? '✓ OK' : 'Chưa cấu hình');
+  setBadge('telegramStatus', CFG.telegramToken   ? 'ok' : 'err', CFG.telegramToken   ? '✓ OK' : 'Chưa cấu hình');
+}
+function setBadge(id, cls, text) {
+  const el = document.getElementById(id);
+  el.className = `badge ${cls}`; el.textContent = text;
+}
+function updateConnectionStatus() {
+  const ok = CFG.geminiKey && CFG.appsScriptUrl;
+  document.getElementById('statusDot').className = ok ? 'dot' : 'dot red';
+  document.getElementById('statusText').textContent = ok ? 'Đã kết nối' : 'Chưa kết nối';
+}
+function openSheets() {
+  if (CFG.spreadsheetId)
+    window.open(`https://docs.google.com/spreadsheets/d/${CFG.spreadsheetId}/edit`, '_blank');
+  else toast('Chưa nhập Spreadsheet ID trong Cài đặt', 'error');
+}
+
+// ═══════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  const tabs = ['nhap','lichsu','baocao','caidat'];
+  const idx = tabs.indexOf(name);
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+  document.getElementById(`tab-${name}`).classList.add('active');
+  if (name === 'baocao') updateSummary();
+}
+
+// ═══════════════════════════════════════════════════════════
+// VOICE RECOGNITION
+// ═══════════════════════════════════════════════════════════
+function toggleVoice() {
+  if (isListening) { stopVoice(); return; }
+  startVoice();
+}
+
+function startVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast('Trình duyệt không hỗ trợ. Dùng Chrome trên Android/Desktop', 'error'); return; }
+  recognition = new SR();
+  recognition.lang = 'vi-VN';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
+  const btn = document.getElementById('voiceBtn');
+  const lbl = document.getElementById('voiceLabel');
+  const box = document.getElementById('transcript');
+
+  recognition.onstart = () => {
+    isListening = true; btn.classList.add('listening'); btn.textContent = '⏹️';
+    lbl.textContent = '🔴 Đang nghe... (nhấn để dừng)';
+    box.classList.remove('empty'); box.textContent = '...';
+  };
+  recognition.onresult = (e) => {
+    let interim = '', final = '';
+    for (let r of e.results) {
+      if (r.isFinal) final += r[0].transcript;
+      else interim += r[0].transcript;
+    }
+    box.textContent = final || interim;
+    if (final) document.getElementById('textInput').value = final;
+  };
+  recognition.onerror = (e) => {
+    stopVoice();
+    if (e.error !== 'no-speech') toast(`Lỗi nhận giọng nói: ${e.error}`, 'error');
+  };
+  recognition.onend = () => {
+    stopVoice();
+    const text = document.getElementById('textInput').value.trim();
+    if (text) setTimeout(() => processInput(), 300);
+  };
+  recognition.start();
+}
+
+function stopVoice() {
+  isListening = false;
+  if (recognition) { try { recognition.stop(); } catch(e){} }
+  const btn = document.getElementById('voiceBtn');
+  btn.classList.remove('listening'); btn.textContent = '🎤';
+  document.getElementById('voiceLabel').textContent = 'Nhấn để nói';
+}
+
+// ═══════════════════════════════════════════════════════════
+// QUICK TEMPLATES
+// ═══════════════════════════════════════════════════════════
+function setQuick(type) {
+  const templates = {
+    'thu-coc':  'Thu khách [Tên khách] mua [Tên hàng] tổng [X triệu], đặt cọc [Y triệu], địa chỉ [Địa chỉ]',
+    'thu-full': 'Thu đủ tiền khách [Tên khách] đơn [Tên hàng] [X triệu], đã trả tiếp [Y triệu]',
+    'chi-hang': 'Nhập hàng [Tên hàng] từ [Nhà cung cấp] giá [X triệu], chi khác [Y nghìn]',
+    'chi-vc':   'Chi vận chuyển [Tên hàng] cho [Người vận chuyển] [X nghìn], lắp đặt [Người lắp đặt] [Y nghìn]',
+    'bao-cao':  'Hôm nay thu bao nhiêu tiền? Tổng lợi nhuận tháng này là bao nhiêu?'
+  };
+  const ta = document.getElementById('textInput');
+  ta.value = templates[type] || '';
+  ta.focus();
+  document.getElementById('transcript').classList.add('empty');
+  document.getElementById('transcript').textContent = `Mẫu: ${templates[type]}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// AI PROCESSING
+// ═══════════════════════════════════════════════════════════
+async function processInput() {
+  const text = document.getElementById('textInput').value.trim() ||
+               document.getElementById('transcript').textContent.trim();
+  if (!text || text.startsWith('Ví dụ:') || text.startsWith('Mẫu:')) {
+    toast('Hãy nói hoặc nhập nội dung cần xử lý', 'error'); return;
+  }
+  if (!CFG.geminiKey) {
+    toast('Chưa cấu hình Gemini API Key trong ⚙️ Cài đặt', 'error'); return;
+  }
+
+  const btn = document.getElementById('processBtn');
+  btn.innerHTML = '<span class="spinner"></span> Đang xử lý...';
+  document.getElementById('processBtn').disabled = true;
+  document.getElementById('resultArea').innerHTML = '';
+
+  try {
+    const result = await callGemini(text);
+    displayResult(result);
+  } catch(e) {
+    showError(`Lỗi AI: ${e.message}`);
+  } finally {
+    document.getElementById('processBtnContent').textContent = '🤖 Xử lý';
+    document.getElementById('processBtn').disabled = false;
+    document.getElementById('processBtn').innerHTML = '<span id="processBtnContent">🤖 Xử lý</span>';
+  }
+}
+
+async function callGemini(userText) {
+  const today = new Date().toLocaleDateString('vi-VN');
+  const prompt = `
+Bạn là trợ lý quản lý thu chi cho cửa hàng nội thất Việt Nam.
+Hôm nay: ${today}
+
+Phân tích câu sau và trả về JSON CHÍNH XÁC (không có markdown, không có giải thích):
+
+Câu người dùng: "${userText}"
+
+Xác định loại giao dịch và trả về một trong hai cấu trúc sau:
+
+Nếu là GHI THU (khách trả tiền, thu tiền, bán hàng):
+{
+  "loai": "THU",
+  "tenKhach": "...",
+  "diaChi": "...",
+  "soDienThoai": "...",
+  "tenHang": "...",
+  "ngayThu": "DD/MM/YYYY",
+  "soTien": số_nguyên,
+  "daDatCoc": số_nguyên_hoặc_0,
+  "daTraTiep": số_nguyên_hoặc_0,
+  "conPhaiTra": số_nguyên,
+  "ghiChu": "...",
+  "tomTat": "mô tả ngắn gọn"
+}
+
+Nếu là GHI CHI (nhập hàng, mua hàng, chi tiền):
+{
+  "loai": "CHI",
+  "tenHangMua": "...",
+  "nhaCungCap": "...",
+  "ngayNhap": "DD/MM/YYYY",
+  "chiTienHang": số_nguyên_hoặc_0,
+  "chiVanChuyen": số_nguyên_hoặc_0,
+  "nguoiVanChuyen": "...",
+  "chiLapDat": số_nguyên_hoặc_0,
+  "nguoiLapDat": "...",
+  "chiKhac": số_nguyên_hoặc_0,
+  "thanhToanNCC": "Đã thanh toán hoặc Chưa thanh toán hoặc Thanh toán một phần",
+  "ghiChu": "...",
+  "tomTat": "mô tả ngắn gọn"
+}
+
+Nếu là câu hỏi báo cáo:
+{
+  "loai": "BAOCAO",
+  "cauHoi": "...",
+  "traLoi": "Không có dữ liệu thực – vui lòng xem sheet Báo Cáo trong Google Sheets để có số liệu chính xác"
+}
+
+Quy tắc chuyển đổi số tiền: 1 triệu = 1000000, 1 nghìn/ngàn = 1000, 500k = 500000.
+Nếu không rõ ngày thì dùng hôm nay: ${today}.
+Trả về JSON THUẦN TÚY, không bọc trong markdown.`;
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${CFG.geminiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.1, maxOutputTokens: 800 }
+      })
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || `HTTP ${res.status}`);
+  }
+  const data = await res.json();
+  let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  // Clean markdown if present
+  raw = raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+  return JSON.parse(raw);
+}
+
+// ═══════════════════════════════════════════════════════════
+// DISPLAY RESULT
+// ═══════════════════════════════════════════════════════════
+function displayResult(data) {
+  const area = document.getElementById('resultArea');
+  pendingData = data;
+
+  if (data.loai === 'BAOCAO') {
+    area.innerHTML = `
+      <div class="result-box error">
+        <div class="result-type" style="color:var(--orange)">📊 Câu hỏi báo cáo</div>
+        <div class="field-grid">
+          <div class="field-item full"><div class="field-label">Câu hỏi</div>
+            <div class="field-value">${data.cauHoi}</div></div>
+          <div class="field-item full"><div class="field-label">Trả lời</div>
+            <div class="field-value">${data.traLoi}</div></div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" onclick="openSheets()" style="flex:1;justify-content:center">
+            📊 Mở Google Sheets xem báo cáo
+          </button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (data.loai === 'THU') {
+    area.innerHTML = `
+      <div class="result-box thu">
+        <div class="result-type thu">💰 Ghi Thu – ${data.tomTat || ''}</div>
+        <div class="field-grid">
+          <div class="field-item"><div class="field-label">Khách hàng</div>
+            <div class="field-value">${data.tenKhach||'—'}</div></div>
+          <div class="field-item"><div class="field-label">Tên hàng</div>
+            <div class="field-value">${data.tenHang||'—'}</div></div>
+          <div class="field-item"><div class="field-label">Ngày thu</div>
+            <div class="field-value">${data.ngayThu||'—'}</div></div>
+          <div class="field-item"><div class="field-label">Số điện thoại</div>
+            <div class="field-value">${data.soDienThoai||'—'}</div></div>
+          <div class="field-item full"><div class="field-label">Địa chỉ</div>
+            <div class="field-value">${data.diaChi||'—'}</div></div>
+          <div class="field-item"><div class="field-label">💰 Tổng tiền đơn</div>
+            <div class="field-value money">${fmt(data.soTien)}</div></div>
+          <div class="field-item"><div class="field-label">Đã đặt cọc</div>
+            <div class="field-value money">${fmt(data.daDatCoc)}</div></div>
+          <div class="field-item"><div class="field-label">Đã trả tiếp</div>
+            <div class="field-value money">${fmt(data.daTraTiep)}</div></div>
+          <div class="field-item"><div class="field-label">⚠️ Còn phải trả</div>
+            <div class="field-value money ${data.conPhaiTra>0?'neg':''}">${fmt(data.conPhaiTra)}</div></div>
+          ${data.ghiChu?`<div class="field-item full"><div class="field-label">Ghi chú</div>
+            <div class="field-value">${data.ghiChu}</div></div>`:''}
+        </div>
+        <div class="action-row">
+          <button class="btn btn-gray" onclick="clearResult()">✏️ Sửa lại</button>
+          <button class="btn btn-green" onclick="openConfirmModal()">✅ Lưu vào Sheets</button>
+        </div>
+      </div>`;
+  } else if (data.loai === 'CHI') {
+    const total = (data.chiTienHang||0)+(data.chiVanChuyen||0)+(data.chiLapDat||0)+(data.chiKhac||0);
+    area.innerHTML = `
+      <div class="result-box chi">
+        <div class="result-type chi">📋 Ghi Chi – ${data.tomTat || ''}</div>
+        <div class="field-grid">
+          <div class="field-item"><div class="field-label">Tên hàng mua</div>
+            <div class="field-value">${data.tenHangMua||'—'}</div></div>
+          <div class="field-item"><div class="field-label">Nhà cung cấp</div>
+            <div class="field-value">${data.nhaCungCap||'—'}</div></div>
+          <div class="field-item"><div class="field-label">Ngày nhập</div>
+            <div class="field-value">${data.ngayNhap||'—'}</div></div>
+          <div class="field-item"><div class="field-label">Thanh toán NCC</div>
+            <div class="field-value">${data.thanhToanNCC||'—'}</div></div>
+          <div class="field-item"><div class="field-label">📦 Chi tiền hàng</div>
+            <div class="field-value money neg">${fmt(data.chiTienHang)}</div></div>
+          <div class="field-item"><div class="field-label">🚚 Chi vận chuyển</div>
+            <div class="field-value money neg">${fmt(data.chiVanChuyen)}</div></div>
+          ${data.nguoiVanChuyen?`<div class="field-item"><div class="field-label">Người vận chuyển</div>
+            <div class="field-value">${data.nguoiVanChuyen}</div></div>`:''}
+          <div class="field-item"><div class="field-label">🔧 Chi lắp đặt</div>
+            <div class="field-value money neg">${fmt(data.chiLapDat)}</div></div>
+          ${data.nguoiLapDat?`<div class="field-item"><div class="field-label">Người lắp đặt</div>
+            <div class="field-value">${data.nguoiLapDat}</div></div>`:''}
+          <div class="field-item"><div class="field-label">Chi khác</div>
+            <div class="field-value money neg">${fmt(data.chiKhac)}</div></div>
+          <div class="field-item"><div class="field-label">💸 Tổng chi</div>
+            <div class="field-value money neg">${fmt(total)}</div></div>
+          ${data.ghiChu?`<div class="field-item full"><div class="field-label">Ghi chú</div>
+            <div class="field-value">${data.ghiChu}</div></div>`:''}
+        </div>
+        <div class="action-row">
+          <button class="btn btn-gray" onclick="clearResult()">✏️ Sửa lại</button>
+          <button class="btn btn-red" onclick="openConfirmModal()">💾 Lưu vào Sheets</button>
+        </div>
+      </div>`;
+  } else {
+    showError('AI không nhận diện được. Hãy thử diễn đạt lại.');
+  }
+
+  if (CFG.autoConfirm && (data.loai==='THU'||data.loai==='CHI')) {
+    setTimeout(() => confirmSave(), 800);
+  }
+}
+
+function showError(msg) {
+  document.getElementById('resultArea').innerHTML = `
+    <div class="result-box error">
+      <div class="result-type" style="color:var(--orange)">⚠️ Lỗi</div>
+      <p style="font-size:13px">${msg}</p>
+    </div>`;
+}
+function clearResult() {
+  document.getElementById('resultArea').innerHTML = '';
+  document.getElementById('textInput').value = '';
+  document.getElementById('transcript').classList.add('empty');
+  document.getElementById('transcript').textContent =
+    'Ví dụ: "Thu khách Nguyễn Văn An mua sofa góc 12 triệu, đặt cọc 5 triệu"';
+  pendingData = null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONFIRM MODAL
+// ═══════════════════════════════════════════════════════════
+function openConfirmModal() {
+  if (!pendingData) return;
+  const d = pendingData;
+  let html = '';
+  if (d.loai === 'THU') {
+    html = `<div style="font-size:13px;line-height:1.8">
+      <b>Loại:</b> Thu tiền khách hàng 💰<br>
+      <b>Khách:</b> ${d.tenKhach||'—'}<br>
+      <b>Hàng:</b> ${d.tenHang||'—'}<br>
+      <b>Tổng tiền:</b> <span style="color:var(--green);font-weight:700">${fmt(d.soTien)}</span><br>
+      <b>Đặt cọc:</b> ${fmt(d.daDatCoc)}<br>
+      <b>Trả tiếp:</b> ${fmt(d.daTraTiep)}<br>
+      <b>Còn lại:</b> <span style="color:var(--red)">${fmt(d.conPhaiTra)}</span>
+    </div>`;
+  } else {
+    const total = (d.chiTienHang||0)+(d.chiVanChuyen||0)+(d.chiLapDat||0)+(d.chiKhac||0);
+    html = `<div style="font-size:13px;line-height:1.8">
+      <b>Loại:</b> Ghi chi phí 📋<br>
+      <b>Hàng mua:</b> ${d.tenHangMua||'—'}<br>
+      <b>NCC:</b> ${d.nhaCungCap||'—'}<br>
+      <b>Tiền hàng:</b> ${fmt(d.chiTienHang)}<br>
+      <b>Vận chuyển:</b> ${fmt(d.chiVanChuyen)}<br>
+      <b>Lắp đặt:</b> ${fmt(d.chiLapDat)}<br>
+      <b>Tổng chi:</b> <span style="color:var(--red);font-weight:700">${fmt(total)}</span>
+    </div>`;
+  }
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('confirmModal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('confirmModal').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════════
+// SAVE TO GOOGLE SHEETS
+// ═══════════════════════════════════════════════════════════
+async function confirmSave() {
+  if (!pendingData) { closeModal(); return; }
+  if (!CFG.appsScriptUrl) {
+    toast('Chưa cấu hình Apps Script URL trong ⚙️ Cài đặt', 'error');
+    closeModal(); return;
+  }
+
+  const btn = document.getElementById('confirmBtn');
+  btn.innerHTML = '<span class="spinner"></span> Đang lưu...';
+  btn.disabled = true;
+
+  try {
+    const payload = { action: pendingData.loai === 'THU' ? 'writeThu' : 'writeChi',
+                      data: pendingData, spreadsheetId: CFG.spreadsheetId };
+    const res = await fetch(CFG.appsScriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if (result.status === 'ok') {
+      closeModal();
+      addToHistory(pendingData);
+      const msg = pendingData.loai === 'THU'
+        ? `✅ Đã lưu thu: ${pendingData.tenKhach} – ${fmt(pendingData.soTien)}`
+        : `✅ Đã lưu chi: ${pendingData.tenHangMua} – ${fmt((pendingData.chiTienHang||0)+(pendingData.chiVanChuyen||0)+(pendingData.chiLapDat||0)+(pendingData.chiKhac||0))}`;
+      toast(msg, 'success');
+      if (CFG.voiceOutputEnabled) speak(msg.replace(/[₫✅]/g,''));
+      if (CFG.telegramEnabled && CFG.telegramToken) sendTelegram(pendingData);
+      clearResult();
+      updateSummary();
+    } else {
+      throw new Error(result.message || 'Lỗi không xác định');
+    }
+  } catch(e) {
+    toast(`Lỗi lưu: ${e.message}`, 'error');
+  } finally {
+    btn.innerHTML = '✅ Xác nhận lưu';
+    btn.disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// TELEGRAM
+// ═══════════════════════════════════════════════════════════
+async function sendTelegram(data) {
+  if (!CFG.telegramToken || !CFG.telegramChatId) return;
+  let msg = '';
+  const now = new Date().toLocaleString('vi-VN');
+  if (data.loai === 'THU') {
+    msg = `🏠 *THÔNG BÁO THU TIỀN*\n` +
+          `💰 Khách: ${data.tenKhach||'—'}\n` +
+          `📦 Hàng: ${data.tenHang||'—'}\n` +
+          `💵 Tổng: *${fmt(data.soTien)}*\n` +
+          `✅ Đặt cọc: ${fmt(data.daDatCoc)}\n` +
+          `⚠️ Còn lại: ${fmt(data.conPhaiTra)}\n` +
+          `📍 ${data.diaChi||'—'}\n` +
+          `🕐 ${now}`;
+  } else {
+    const total = (data.chiTienHang||0)+(data.chiVanChuyen||0)+(data.chiLapDat||0)+(data.chiKhac||0);
+    msg = `🏠 *THÔNG BÁO CHI TIỀN*\n` +
+          `📦 Hàng: ${data.tenHangMua||'—'}\n` +
+          `🏭 NCC: ${data.nhaCungCap||'—'}\n` +
+          `💸 Tiền hàng: ${fmt(data.chiTienHang)}\n` +
+          `🚚 Vận chuyển: ${fmt(data.chiVanChuyen)} – ${data.nguoiVanChuyen||'—'}\n` +
+          `🔧 Lắp đặt: ${fmt(data.chiLapDat)} – ${data.nguoiLapDat||'—'}\n` +
+          `💰 TỔNG CHI: *${fmt(total)}*\n` +
+          `🕐 ${now}`;
+  }
+  try {
+    await fetch(`https://api.telegram.org/bot${CFG.telegramToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: CFG.telegramChatId, text: msg, parse_mode: 'Markdown' })
+    });
+  } catch(e) { console.warn('Telegram error:', e); }
+}
+
+async function testTelegram() {
+  if (!CFG.telegramToken || !CFG.telegramChatId) {
+    toast('Hãy nhập Bot Token và Chat ID trước', 'error'); return;
+  }
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${CFG.telegramToken}/sendMessage`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: CFG.telegramChatId,
+        text: '🏠 Xin chào! Trợ Lý AI Nội Thất đã kết nối thành công với Telegram của bạn! ✅'
+      })
+    });
+    const r = await res.json();
+    if (r.ok) toast('✅ Gửi Telegram thành công!', 'success');
+    else toast(`Lỗi: ${r.description}`, 'error');
+  } catch(e) { toast(`Lỗi kết nối: ${e.message}`, 'error'); }
+}
+
+async function testSheets() {
+  if (!CFG.appsScriptUrl) { toast('Chưa nhập Apps Script URL', 'error'); return; }
+  try {
+    const res = await fetch(CFG.appsScriptUrl + '?action=ping');
+    const r = await res.json();
+    if (r.status === 'ok') toast('✅ Kết nối Google Sheets thành công!', 'success');
+    else toast(`Lỗi: ${r.message}`, 'error');
+  } catch(e) { toast(`Lỗi kết nối: ${e.message}`, 'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// HISTORY (local)
+// ═══════════════════════════════════════════════════════════
+function addToHistory(data) {
+  const entry = { ...data, savedAt: new Date().toLocaleString('vi-VN') };
+  history.unshift(entry);
+  if (history.length > 50) history.pop();
+  localStorage.setItem('ai_noi_that_hist', JSON.stringify(history));
+  renderHistory();
+}
+function loadHistory() {
+  const saved = localStorage.getItem('ai_noi_that_hist');
+  if (saved) history = JSON.parse(saved);
+  renderHistory();
+}
+function clearHistory() {
+  if (!confirm('Xóa toàn bộ lịch sử cục bộ?')) return;
+  history = []; localStorage.removeItem('ai_noi_that_hist');
+  renderHistory();
+}
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (!history.length) {
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">Chưa có giao dịch nào.</div>';
+    return;
+  }
+  list.innerHTML = history.map(h => {
+    if (h.loai === 'THU') {
+      return `<div class="history-item thu">
+        <div class="history-icon">💰</div>
+        <div class="history-body">
+          <div class="history-main">${h.tenKhach||'—'} · ${h.tenHang||'—'}</div>
+          <div class="history-sub">${h.ngayThu||'—'} · ${h.savedAt}</div>
+        </div>
+        <div class="history-amount thu">+${fmt(h.soTien)}</div>
+      </div>`;
+    } else {
+      const total = (h.chiTienHang||0)+(h.chiVanChuyen||0)+(h.chiLapDat||0)+(h.chiKhac||0);
+      return `<div class="history-item chi">
+        <div class="history-icon">📋</div>
+        <div class="history-body">
+          <div class="history-main">${h.tenHangMua||'—'} · ${h.nhaCungCap||'—'}</div>
+          <div class="history-sub">${h.ngayNhap||'—'} · ${h.savedAt}</div>
+        </div>
+        <div class="history-amount chi">-${fmt(total)}</div>
+      </div>`;
+    }
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// SUMMARY (local)
+// ═══════════════════════════════════════════════════════════
+function updateSummary() {
+  let thu = 0, chi = 0;
+  history.forEach(h => {
+    if (h.loai==='THU') thu += (h.soTien||0);
+    else chi += (h.chiTienHang||0)+(h.chiVanChuyen||0)+(h.chiLapDat||0)+(h.chiKhac||0);
+  });
+  document.getElementById('totalThu').textContent = fmt(thu);
+  document.getElementById('totalChi').textContent = fmt(chi);
+  const profit = thu - chi;
+  const pEl = document.getElementById('totalProfit');
+  pEl.textContent = fmt(Math.abs(profit)) + (profit<0?' (lỗ)':'');
+  pEl.style.color = profit >= 0 ? 'var(--primary)' : 'var(--red)';
+}
+
+// ═══════════════════════════════════════════════════════════
+// REPORT QUERY
+// ═══════════════════════════════════════════════════════════
+async function askReport() {
+  const q = document.getElementById('reportQuery').value.trim();
+  if (!q) return;
+  if (!CFG.geminiKey) { toast('Chưa cấu hình Gemini API Key', 'error'); return; }
+
+  const area = document.getElementById('reportAnswer');
+  area.innerHTML = '<div style="text-align:center;padding:10px"><span class="spinner" style="border-color:rgba(0,0,0,.2);border-top-color:var(--primary)"></span></div>';
+
+  // Tổng hợp từ history local
+  let thu = 0, chi = 0, countThu = 0, countChi = 0;
+  history.forEach(h => {
+    if (h.loai==='THU') { thu += (h.soTien||0); countThu++; }
+    else { chi += (h.chiTienHang||0)+(h.chiVanChuyen||0)+(h.chiLapDat||0)+(h.chiKhac||0); countChi++; }
+  });
+
+  try {
+    const prompt = `Bạn là trợ lý tài chính. Dữ liệu từ lịch sử ứng dụng (có thể chưa đầy đủ):
+Tổng thu: ${fmt(thu)} (${countThu} giao dịch)
+Tổng chi: ${fmt(chi)} (${countChi} giao dịch)
+Lợi nhuận ước tính: ${fmt(thu-chi)}
+
+Câu hỏi: "${q}"
+
+Trả lời ngắn gọn bằng tiếng Việt, dưới 100 từ. Nhắc người dùng xem Google Sheets để có số liệu đầy đủ.`;
+
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${CFG.geminiKey}`,
+      { method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ contents: [{parts:[{text:prompt}]}],
+          generationConfig: {temperature:0.3, maxOutputTokens:200} }) }
+    );
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Không có kết quả';
+    area.innerHTML = `<div class="result-box error" style="margin-top:8px">
+      <div style="font-size:13px;line-height:1.6">${text}</div></div>`;
+  } catch(e) {
+    area.innerHTML = `<div style="color:var(--red);font-size:12px">Lỗi: ${e.message}</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+function fmt(n) {
+  if (!n && n!==0) return '0 ₫';
+  return Number(n).toLocaleString('vi-VN') + ' ₫';
+}
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = type ? `show ${type}` : 'show';
+  setTimeout(() => el.className = '', 3200);
+}
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'vi-VN'; u.rate = 1.05;
+  window.speechSynthesis.speak(u);
+}
+
+// PWA Install
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
 </body>
 </html>
