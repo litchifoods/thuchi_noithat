@@ -1,0 +1,361 @@
+index.html
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Trợ Lý AI Nội Thất</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2E7D32">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; padding-bottom: 70px; }
+        .header { background: #2E7D32; color: white; padding: 15px; text-align: center; font-size: 18px; font-weight: bold; position: sticky; top: 0; z-index: 100; }
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
+        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card-title { font-weight: bold; margin-bottom: 10px; color: #2E7D32; border-left: 4px solid #2E7D32; padding-left: 10px; }
+        input, textarea, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        button { background: #2E7D32; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 16px; cursor: pointer; width: 100%; margin-top: 10px; }
+        button:active { background: #1B5E20; }
+        .result { background: #e8f5e9; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; }
+        .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #ddd; }
+        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; color: #666; }
+        .tab.active { color: #2E7D32; border-top: 2px solid #2E7D32; background: #f5f5f5; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .voice-btn { background: #FF5722; margin-top: 5px; }
+        .voice-btn:active { background: #E64A19; }
+        .setting-row { margin-bottom: 15px; }
+        .setting-row label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 13px; color: #666; }
+        .test-status { margin-top: 10px; padding: 8px; border-radius: 8px; font-size: 13px; }
+        .test-success { background: #d4edda; color: #155724; }
+        .test-error { background: #f8d7da; color: #721c24; }
+        .history-item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .history-date { font-size: 11px; color: #999; }
+        .history-type { font-weight: bold; font-size: 12px; margin-bottom: 5px; }
+        .history-type.thu { color: #2E7D32; }
+        .history-type.chi { color: #D32F2F; }
+        .history-content { font-size: 14px; }
+        .clear-history { background: #dc3545; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">🏠 Trợ Lý AI Nội Thất</div>
+    
+    <div class="container">
+        <div class="tab-bar">
+            <div class="tab active" data-tab="voice">🎤 Nhập</div>
+            <div class="tab" data-tab="history">📋 Lịch sử</div>
+            <div class="tab" data-tab="settings">⚙️ Cài đặt</div>
+        </div>
+
+        <!-- Tab Voice -->
+        <div id="voice" class="tab-content active">
+            <div class="card">
+                <div class="card-title">🎤 Nhập bằng giọng nói</div>
+                <button id="voiceInputBtn" class="voice-btn">🎙️ Nhấn để nói</button>
+                <textarea id="voiceText" rows="3" placeholder="Hoặc nhập văn bản..."></textarea>
+                <button id="submitBtn">📤 Xử lý & Lưu</button>
+                <div id="result" class="result"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">📝 Ví dụ câu nói</div>
+                <p style="font-size: 13px; color: #666;">• Thu khách Nguyễn Văn An mua sofa góc 12 triệu, đặt cọc 5 triệu</p>
+                <p style="font-size: 13px; color: #666;">• Nhập hàng sofa da từ Công ty A giá 8 triệu rưỡi, vận chuyển 250 nghìn</p>
+                <p style="font-size: 13px; color: #666;">• Tháng này thu bao nhiêu?</p>
+            </div>
+        </div>
+
+        <!-- Tab History -->
+        <div id="history" class="tab-content">
+            <div class="card">
+                <div class="card-title">📋 Lịch sử giao dịch</div>
+                <div id="historyList"></div>
+                <button id="clearHistoryBtn" class="clear-history">🗑️ Xóa lịch sử</button>
+            </div>
+        </div>
+
+        <!-- Tab Settings -->
+        <div id="settings" class="tab-content">
+            <div class="card">
+                <div class="card-title">⚙️ Cài đặt</div>
+                <div class="setting-row">
+                    <label>🤖 Gemini API Key</label>
+                    <input type="password" id="geminiKey" placeholder="AIzaSy...">
+                </div>
+                <div class="setting-row">
+                    <label>📡 Apps Script URL</label>
+                    <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+                </div>
+                <div class="setting-row">
+                    <label>📊 Spreadsheet ID</label>
+                    <input type="text" id="spreadsheetId" placeholder="1Xh_B2YKXPv...">
+                </div>
+                <div class="setting-row">
+                    <label>🤖 Bot Token (Telegram)</label>
+                    <input type="password" id="botToken" placeholder="123456789:ABC...">
+                </div>
+                <div class="setting-row">
+                    <label>💬 Chat ID (Telegram)</label>
+                    <input type="text" id="chatId" placeholder="123456789">
+                </div>
+                <button id="testConnectionBtn">🧪 Kiểm tra kết nối</button>
+                <div id="testResult" class="test-status"></div>
+                <button id="saveSettingsBtn" style="background: #2196F3; margin-top: 10px;">💾 Lưu cài đặt</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load settings from localStorage
+        function loadSettings() {
+            document.getElementById('geminiKey').value = localStorage.getItem('geminiKey') || '';
+            document.getElementById('scriptUrl').value = localStorage.getItem('scriptUrl') || '';
+            document.getElementById('spreadsheetId').value = localStorage.getItem('spreadsheetId') || '';
+            document.getElementById('botToken').value = localStorage.getItem('botToken') || '';
+            document.getElementById('chatId').value = localStorage.getItem('chatId') || '';
+        }
+
+        function saveSettings() {
+            localStorage.setItem('geminiKey', document.getElementById('geminiKey').value);
+            localStorage.setItem('scriptUrl', document.getElementById('scriptUrl').value);
+            localStorage.setItem('spreadsheetId', document.getElementById('spreadsheetId').value);
+            localStorage.setItem('botToken', document.getElementById('botToken').value);
+            localStorage.setItem('chatId', document.getElementById('chatId').value);
+            alert('Đã lưu cài đặt!');
+        }
+
+        // Test connection
+        async function testConnection() {
+            const scriptUrl = document.getElementById('scriptUrl').value;
+            const resultDiv = document.getElementById('testResult');
+            if (!scriptUrl) {
+                resultDiv.innerHTML = '❌ Vui lòng nhập Apps Script URL';
+                resultDiv.className = 'test-status test-error';
+                return;
+            }
+            resultDiv.innerHTML = '🔄 Đang kiểm tra...';
+            resultDiv.className = 'test-status';
+            try {
+                const response = await fetch(`${scriptUrl}?action=ping`);
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    resultDiv.innerHTML = '✅ Kết nối thành công!';
+                    resultDiv.className = 'test-status test-success';
+                } else {
+                    resultDiv.innerHTML = '❌ Kết nối thất bại: ' + (data.message || 'Lỗi');
+                    resultDiv.className = 'test-status test-error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '❌ Lỗi: ' + error.message;
+                resultDiv.className = 'test-status test-error';
+            }
+        }
+
+        // Save history to localStorage
+        function saveHistory(entry) {
+            let history = JSON.parse(localStorage.getItem('history') || '[]');
+            history.unshift({ ...entry, timestamp: new Date().toISOString() });
+            if (history.length > 50) history = history.slice(0, 50);
+            localStorage.setItem('history', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const history = JSON.parse(localStorage.getItem('history') || '[]');
+            const container = document.getElementById('historyList');
+            if (history.length === 0) {
+                container.innerHTML = '<p style="color:#999; text-align:center;">Chưa có lịch sử</p>';
+                return;
+            }
+            container.innerHTML = history.map(item => `
+                <div class="history-item">
+                    <div class="history-date">${new Date(item.timestamp).toLocaleString()}</div>
+                    <div class="history-type ${item.type}">${item.type === 'thu' ? '💰 THU' : '📋 CHI'}</div>
+                    <div class="history-content">${item.content.substring(0, 100)}${item.content.length > 100 ? '...' : ''}</div>
+                </div>
+            `).join('');
+        }
+
+        function clearHistory() {
+            if (confirm('Xóa toàn bộ lịch sử?')) {
+                localStorage.removeItem('history');
+                renderHistory();
+            }
+        }
+
+        // Voice input
+        function setupVoice() {
+            const btn = document.getElementById('voiceInputBtn');
+            const textarea = document.getElementById('voiceText');
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                btn.disabled = true;
+                btn.textContent = '⚠️ Trình duyệt không hỗ trợ nhập giọng nói';
+                return;
+            }
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'vi-VN';
+            recognition.interimResults = false;
+            btn.onclick = () => {
+                recognition.start();
+                btn.textContent = '🎙️ Đang nghe...';
+                btn.disabled = true;
+            };
+            recognition.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                textarea.value = text;
+                btn.textContent = '🎙️ Nhấn để nói';
+                btn.disabled = false;
+            };
+            recognition.onerror = () => {
+                btn.textContent = '🎙️ Nhấn để nói';
+                btn.disabled = false;
+            };
+            recognition.onend = () => {
+                btn.textContent = '🎙️ Nhấn để nói';
+                btn.disabled = false;
+            };
+        }
+
+        // Submit and call Gemini + Apps Script
+        async function submit() {
+            const text = document.getElementById('voiceText').value.trim();
+            const geminiKey = document.getElementById('geminiKey').value;
+            const scriptUrl = document.getElementById('scriptUrl').value;
+            const spreadsheetId = document.getElementById('spreadsheetId').value;
+            const botToken = document.getElementById('botToken').value;
+            const chatId = document.getElementById('chatId').value;
+            const resultDiv = document.getElementById('result');
+
+            if (!text) {
+                resultDiv.innerHTML = '⚠️ Vui lòng nhập nội dung';
+                return;
+            }
+            if (!geminiKey) {
+                resultDiv.innerHTML = '⚠️ Vui lòng nhập Gemini API Key';
+                return;
+            }
+            if (!scriptUrl) {
+                resultDiv.innerHTML = '⚠️ Vui lòng nhập Apps Script URL';
+                return;
+            }
+
+            resultDiv.innerHTML = '🔄 Đang xử lý với AI...';
+
+            try {
+                // Call Gemini API to parse
+                const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: `Bạn là trợ lý quản lý nội thất. Phân tích câu sau và trả về JSON.
+                                Nếu là THU (bán hàng): {"type":"thu","tenKhach":"","diaChi":"","soDienThoai":"","tenHang":"","soTien":0,"daDatCoc":0}
+                                Nếu là CHI (mua hàng): {"type":"chi","tenHangMua":"","nhaCungCap":"","chiTienHang":0,"chiVanChuyen":0,"nguoiVanChuyen":"","chiLapDat":0,"nguoiLapDat":"","chiKhac":0}
+                                Câu: "${text}"
+                                Chỉ trả về JSON, không giải thích.`
+                            }]
+                        }]
+                    })
+                });
+                const geminiData = await geminiResponse.json();
+                let parsed = JSON.parse(geminiData.candidates[0].content.parts[0].text);
+                
+                // Add date
+                const today = new Date().toLocaleDateString('vi-VN');
+                
+                // Call Apps Script to save
+                let appsScriptResponse;
+                if (parsed.type === 'thu') {
+                    appsScriptResponse = await fetch(scriptUrl, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'writeThu',
+                            data: {
+                                tenKhach: parsed.tenKhach,
+                                diaChi: parsed.diaChi,
+                                soDienThoai: parsed.soDienThoai,
+                                tenHang: parsed.tenHang,
+                                ngayThu: today,
+                                soTien: parsed.soTien,
+                                daDatCoc: parsed.daDatCoc,
+                                daTraTiep: 0,
+                                ghiChu: text
+                            }
+                        })
+                    });
+                } else {
+                    appsScriptResponse = await fetch(scriptUrl, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'writeChi',
+                            data: {
+                                tenHangMua: parsed.tenHangMua,
+                                nhaCungCap: parsed.nhaCungCap,
+                                ngayNhap: today,
+                                chiTienHang: parsed.chiTienHang,
+                                chiVanChuyen: parsed.chiVanChuyen,
+                                nguoiVanChuyen: parsed.nguoiVanChuyen,
+                                chiLapDat: parsed.chiLapDat,
+                                nguoiLapDat: parsed.nguoiLapDat,
+                                chiKhac: parsed.chiKhac,
+                                thanhToanNCC: 'Chưa thanh toán',
+                                ghiChu: text
+                            }
+                        })
+                    });
+                }
+                
+                const saveResult = await appsScriptResponse.json();
+                
+                if (saveResult.status === 'ok') {
+                    resultDiv.innerHTML = `✅ Thành công! ${saveResult.message}`;
+                    saveHistory({ type: parsed.type, content: text });
+                    document.getElementById('voiceText').value = '';
+                    
+                    // Send Telegram notification if configured
+                    if (botToken && chatId) {
+                        fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                chat_id: chatId,
+                                text: `📋 ${parsed.type === 'thu' ? 'THU TIỀN' : 'CHI TIỀN'}\n${text}\n✅ Đã lưu thành công!`
+                            })
+                        }).catch(e => console.log('Telegram error:', e));
+                    }
+                } else {
+                    resultDiv.innerHTML = `❌ Lỗi: ${saveResult.message}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Lỗi: ${error.message}`;
+            }
+        }
+
+        // Tab switching
+        function setupTabs() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.tab).classList.add('active');
+                    if (tab.dataset.tab === 'history') renderHistory();
+                });
+            });
+        }
+
+        // Initialize
+        loadSettings();
+        setupTabs();
+        setupVoice();
+        renderHistory();
+        document.getElementById('submitBtn').onclick = submit;
+        document.getElementById('testConnectionBtn').onclick = testConnection;
+        document.getElementById('saveSettingsBtn').onclick = saveSettings;
+        document.getElementById('clearHistoryBtn').onclick = clearHistory;
+    </script>
+</body>
+</html>
