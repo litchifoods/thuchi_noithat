@@ -1,15 +1,16 @@
 {
   "name": "Trợ Lý AI Nội Thất",
-  "short_name": "NoiThat AI",
+  "short_name": "AI Nội Thất",
+  "description": "Quản lý thu chi cửa hàng nội thất bằng giọng nói và AI",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#2E7D32",
-  "theme_color": "#2E7D32",
+  "background_color": "#1a237e",
+  "theme_color": "#1a237e",
+  "orientation": "portrait",
   "icons": [
-    {
-      "src": "https://via.placeholder.com/192x192?text=NT",
-      "sizes": "192x192",
-      "type": "image/png"
-    }
-  ]
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "vi"
 }
