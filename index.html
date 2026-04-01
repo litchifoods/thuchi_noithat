@@ -668,7 +668,7 @@ Trả về JSON THUẦN TÚY, không bọc trong markdown.`;
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${CFG.geminiKey}`,
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: { temperature: 0.1, maxOutputTokens: 800 }
@@ -859,7 +859,7 @@ async function confirmSave() {
                       data: pendingData, spreadsheetId: CFG.spreadsheetId };
     const res = await fetch(CFG.appsScriptUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      
       body: JSON.stringify(payload)
     });
     const result = await res.json();
@@ -915,7 +915,7 @@ async function sendTelegram(data) {
   try {
     await fetch(`https://api.telegram.org/bot${CFG.telegramToken}/sendMessage`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      
       body: JSON.stringify({ chat_id: CFG.telegramChatId, text: msg, parse_mode: 'Markdown' })
     });
   } catch(e) { console.warn('Telegram error:', e); }
@@ -927,7 +927,7 @@ async function testTelegram() {
   }
   try {
     const res = await fetch(`https://api.telegram.org/bot${CFG.telegramToken}/sendMessage`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', 
       body: JSON.stringify({
         chat_id: CFG.telegramChatId,
         text: '🏠 Xin chào! Trợ Lý AI Nội Thất đã kết nối thành công với Telegram của bạn! ✅'
