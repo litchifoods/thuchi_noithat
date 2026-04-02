@@ -216,9 +216,13 @@
     <!-- Text Input -->
     <div class="input-row">
       <textarea id="textInput" rows="2" placeholder="Hoặc gõ nội dung tại đây..."></textarea>
-      <button class="btn btn-primary" onclick="processInput()" id="processBtn">
-        <span id="processBtnContent">🤖 Xử lý</span>
-      </button>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="btn btn-primary" onclick="processInput()" id="processBtn">
+          <span id="processBtnContent">🤖 Xử lý</span>
+        </button>
+        <button class="btn btn-red" onclick="cancelProcess()" id="cancelBtn"
+                style="display:none;padding:8px 12px;font-size:12px">✕ Hủy</button>
+      </div>
     </div>
   </div>
 
@@ -422,6 +426,8 @@ let pendingData = null;
 let history = [];
 let recognition = null;
 let isListening = false;
+let isProcessing = false;
+let geminiController = null;
 
 // ═══════════════════════════════════════════════════════════
 // INIT
@@ -581,6 +587,21 @@ function setQuick(type) {
 // ═══════════════════════════════════════════════════════════
 // AI PROCESSING
 // ═══════════════════════════════════════════════════════════
+function resetProcessBtn() {
+  isProcessing = false;
+  geminiController = null;
+  const b = document.getElementById('processBtn');
+  if (b) { b.disabled = false; b.innerHTML = '<span id="processBtnContent">🤖 Xử lý</span>'; }
+  const c = document.getElementById('cancelBtn');
+  if (c) c.style.display = 'none';
+}
+
+function cancelProcess() {
+  if (geminiController) { try { geminiController.abort(); } catch(e){} }
+  resetProcessBtn();
+  showError('⛔ Đã hủy. Hãy thử lại.');
+}
+
 async function processInput() {
   const text = document.getElementById('textInput').value.trim() ||
                document.getElementById('transcript').textContent.trim();
@@ -591,20 +612,24 @@ async function processInput() {
     toast('Chưa cấu hình Gemini API Key trong ⚙️ Cài đặt', 'error'); return;
   }
 
+  if (isProcessing) {
+    toast('Đang xử lý, hãy nhấn ✕ Hủy rồi thử lại', 'error'); return;
+  }
+  isProcessing = true;
   const btn = document.getElementById('processBtn');
   btn.innerHTML = '<span class="spinner"></span> Đang xử lý...';
-  document.getElementById('processBtn').disabled = true;
+  btn.disabled = true;
+  document.getElementById('cancelBtn').style.display = 'block';
   document.getElementById('resultArea').innerHTML = '';
 
   try {
     const result = await callGemini(text);
     displayResult(result);
   } catch(e) {
-    showError(`Lỗi AI: ${e.message}`);
+    const errMsg = e.name === 'AbortError' ? '⏱️ Quá 15 giây không phản hồi. Nhấn Xử lý để thử lại!' : e.message;
+    showError(`Lỗi AI: ${errMsg}`);
   } finally {
-    document.getElementById('processBtnContent').textContent = '🤖 Xử lý';
-    document.getElementById('processBtn').disabled = false;
-    document.getElementById('processBtn').innerHTML = '<span id="processBtnContent">🤖 Xử lý</span>';
+    resetProcessBtn();
   }
 }
 
@@ -664,25 +689,27 @@ Quy tắc chuyển đổi số tiền: 1 triệu = 1000000, 1 nghìn/ngàn = 100
 Nếu không rõ ngày thì dùng hôm nay: ${today}.
 Trả về JSON THUẦN TÚY, không bọc trong markdown.`;
 
-const controller = new AbortController();
-const timeout = setTimeout(() => controller.abort(), 15000);
-const res = await fetch(
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${CFG.geminiKey}`,
-  {
-    method: 'POST',
-    signal: controller.signal,
-    body: JSON.stringify({
+geminiController = new AbortController();
+  const timeout = setTimeout(() => {
+    if (geminiController) geminiController.abort();
+  }, 15000);
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${CFG.geminiKey}`,
+    {
+      method: 'POST',
+      signal: geminiController.signal,
+      body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: { temperature: 0.1, maxOutputTokens: 800 }
       })
     }
   );
+  clearTimeout(timeout);
   if (!res.ok) {
     const err = await res.json();
     throw new Error(err.error?.message || `HTTP ${res.status}`);
   }
   const data = await res.json();
-  clearTimeout(timeout);
   let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   // Clean markdown if present
   raw = raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
@@ -918,7 +945,7 @@ async function sendTelegram(data) {
   try {
     await fetch(`https://api.telegram.org/bot${CFG.telegramToken}/sendMessage`, {
       method: 'POST',
-      
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: CFG.telegramChatId, text: msg, parse_mode: 'Markdown' })
     });
   } catch(e) { console.warn('Telegram error:', e); }
@@ -930,7 +957,8 @@ async function testTelegram() {
   }
   try {
     const res = await fetch(`https://api.telegram.org/bot${CFG.telegramToken}/sendMessage`, {
-      method: 'POST', 
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: CFG.telegramChatId,
         text: '🏠 Xin chào! Trợ Lý AI Nội Thất đã kết nối thành công với Telegram của bạn! ✅'
@@ -1047,19 +1075,23 @@ Câu hỏi: "${q}"
 
 Trả lời ngắn gọn bằng tiếng Việt, dưới 100 từ. Nhắc người dùng xem Google Sheets để có số liệu đầy đủ.`;
 
+    const rCtrl = new AbortController();
+    const rTimeout = setTimeout(() => rCtrl.abort(), 15000);
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${CFG.geminiKey}`,
-      { method: 'POST', headers: {'Content-Type':'application/json'},
+      { method: 'POST',
+        signal: rCtrl.signal,
         body: JSON.stringify({ contents: [{parts:[{text:prompt}]}],
           generationConfig: {temperature:0.3, maxOutputTokens:200} }) }
     );
+    clearTimeout(rTimeout);
     const data = await res.json();
-    clearTimeout(timeout);
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Không có kết quả';
     area.innerHTML = `<div class="result-box error" style="margin-top:8px">
       <div style="font-size:13px;line-height:1.6">${text}</div></div>`;
   } catch(e) {
-    area.innerHTML = `<div style="color:var(--red);font-size:12px">Lỗi: ${e.message}</div>`;
+    const errMsg = e.name === 'AbortError' ? 'Quá thời gian chờ (15s). Vui lòng thử lại!' : e.message;
+    area.innerHTML = `<div style="color:var(--red);font-size:12px">Lỗi: ${errMsg}</div>`;
   }
 }
 
